@@ -127,13 +127,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Filter_CPU.cpp" />
     <ClCompile Include="GUI_Form.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Gpu.h" />
+    <ClInclude Include="Filter_CPU.h" />
+    <ClInclude Include="Filter_Gpu.h" />
     <ClInclude Include="GUI_Form.h">
       <FileType>CppForm</FileType>
     </ClInclude>
+    <ClInclude Include="include\stb_image.h" />
+    <ClInclude Include="include\stb_image_write.h" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="GUI_Form.resx">
@@ -141,7 +145,8 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Gpu.cu" />
+    <None Include="Filter_Gpu.cu" />
+    <None Include="README.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -3,7 +3,7 @@
 #include <cuda_runtime.h>
 #include <cuda_runtime_api.h>
 #include "device_launch_parameters.h"
-#include "GpuSolver.h"
+#include "Filter_Gpu.h"
 #include <stdio.h>
 #include "include/stb_image.h"
 #include "include/stb_image_write.h"
