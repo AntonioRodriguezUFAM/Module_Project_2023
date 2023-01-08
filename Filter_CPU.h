@@ -6,9 +6,9 @@ class useCPU
 public:
 	void adding(int* c, const int* a, const int* b, unsigned int size);
 	double ConvertImageToGrayCpu(unsigned char* imageRGBA, int width, int height);
-	inline auto ConvertImageToRed(unsigned char* imageRGBA, int width, int height);
-	inline auto ConvertImageToGreen(unsigned char* imageRGBA, int width, int height);
-	inline auto ConvertImageToBlue(unsigned char* imageRGBA, int width, int height);
-	inline auto ConvertImageInv(unsigned char* imageRGBA, int width, int height);
+	double ConvertImageToRedCPU(unsigned char* imageRGBA, int width, int height);
+	double ConvertImageToGreenCPU(unsigned char* imageRGBA, int width, int height);
+	double ConvertImageToBlueCPU(unsigned char* imageRGBA, int width, int height);
+	double ConvertImageInvCPU(unsigned char* imageRGBA, int width, int height);
 };
 #endif

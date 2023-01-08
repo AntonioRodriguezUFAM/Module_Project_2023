@@ -1,9 +1,8 @@
-#include <iostream>
-#include <cuda.h>
-#include <cuda_runtime.h>
-#include <cuda_runtime_api.h>
-#include "device_launch_parameters.h"
+
+// GPU Filters
+#include"Filter_CPU.h"
 #include "Filter_Gpu.h"
+
 #include <stdio.h>
 #include "include/stb_image.h"
 #include "include/stb_image_write.h"
@@ -11,17 +10,22 @@
 #include <string>
 #include <cassert>
 #include <chrono>
+#include <ctime>
+
+
+#include <msclr\marshal_cppstd.h>
+
+
+#include <cuda.h>
+#include <cuda_runtime.h>
+#include <cuda_runtime_api.h>
+#include "device_launch_parameters.h"
+
+
 using namespace std::chrono;
+using namespace std;
 
-//#define STB_IMAGE_IMPLEMENTATION
-// Write Images
-//#define STB_IMAGE_WRITE_IMPLEMENTATION
-
-//#define STBIR_INCLUDE_STB_IMAGE_RESIZE_H
-
-//#include "include/stb_image.h"
-//#include "include/stb_image_resize.h"
-//#include "include/stb_image_write.h"
+// Create Data Structure Pixel
 struct Pixel
 {
 	unsigned char r, g, b, a;
@@ -32,6 +36,7 @@ __global__ void AddKernel(int* c, const int* a, const int* b)
 	int i = threadIdx.x;
 	c[i] = a[i] + b[i];
 }
+
 __global__ void ConvertImageToGrayGpu(unsigned char* imageRGBA)
 {
 	uint32_t x = blockIdx.x * blockDim.x + threadIdx.x;
@@ -39,8 +44,7 @@ __global__ void ConvertImageToGrayGpu(unsigned char* imageRGBA)
 	uint32_t idx = y * blockDim.x * gridDim.x + x;
 
 	Pixel* ptrPixel = (Pixel*)&imageRGBA[idx * 4];
-	unsigned char pixelValue = (unsigned char)
-		(ptrPixel->r * 0.2126f + ptrPixel->g * 0.7152f + ptrPixel->b * 0.0722f);
+	unsigned char pixelValue = (unsigned char)(ptrPixel->r * 0.2126f + ptrPixel->g * 0.7152f + ptrPixel->b * 0.0722f);
 	ptrPixel->r = pixelValue;
 	ptrPixel->g = pixelValue;
 	ptrPixel->b = pixelValue;
@@ -108,7 +112,7 @@ __global__ void ConvertImageToInvGpu(unsigned char* imageRGBA)
 }
 
 
-using namespace std;
+
 void useGPU::adding(int* c, const int* a, const int* b, unsigned int size) {
 	int* dev_a = 0;
 	int* dev_b = 0;
@@ -122,7 +126,7 @@ void useGPU::adding(int* c, const int* a, const int* b, unsigned int size) {
 
 	cudaDeviceSynchronize();
 
-	AddKernel << <1, size >> > (dev_c, dev_a, dev_b);
+	AddKernel<<< 1, size >>> (dev_c, dev_a, dev_b);
 
 	cudaMemcpy(c, dev_c, size * sizeof(int), cudaMemcpyDeviceToHost);
 
@@ -130,7 +134,10 @@ void useGPU::adding(int* c, const int* a, const int* b, unsigned int size) {
 	cudaFree(dev_a);
 	cudaFree(dev_b);
 }
+
+
 int useGPU::ImageToGrayGpu(unsigned char* imageRGBA, int width, int height) {
+	// Start Timers
 	unsigned char* ptrImageDataGpu = nullptr;
 	assert(cudaMalloc(&ptrImageDataGpu, width * height * 4) == cudaSuccess);
 	assert(cudaMemcpy(ptrImageDataGpu, imageRGBA, width * height * 4, cudaMemcpyHostToDevice) == cudaSuccess);
@@ -150,12 +157,17 @@ int useGPU::ImageToGrayGpu(unsigned char* imageRGBA, int width, int height) {
 
 	cudaFree(ptrImageDataGpu);
 	return duration.count();
-	// Build output filename
-	//std::string fileNameOut = "images/output.jpg";
-	//stbi_write_jpg("images/output.jpg", width, height, 3, imageRGBA, 100);
+
+	// Time of execution
+	//return timeGpu;
+
+	
 }
 
-int useGPU::ImageToRedGpu(unsigned char* imageRGBA, int width, int height) {
+double useGPU::ImageToRedGpu(unsigned char* imageRGBA, int width, int height) {
+	// Start Timers
+	auto start = std::chrono::steady_clock::now();
+
 	unsigned char* ptrImageDataGpu = nullptr;
 	assert(cudaMalloc(&ptrImageDataGpu, width * height * 4) == cudaSuccess);
 	assert(cudaMemcpy(ptrImageDataGpu, imageRGBA, width * height * 4, cudaMemcpyHostToDevice) == cudaSuccess);
@@ -165,7 +177,8 @@ int useGPU::ImageToRedGpu(unsigned char* imageRGBA, int width, int height) {
 	dim3 gridSize(width / blockSize.x, height / blockSize.y);
 	//ConvertImageToGrayGpu <<<gridSize, blockSize >>> (ptrImageDataGpu);
 	auto start = high_resolution_clock::now();
-	ConvertImageToRedGpu << <gridSize, blockSize >> > (ptrImageDataGpu);
+
+	ConvertImageToRedGpu <<< gridSize, blockSize >>> (ptrImageDataGpu);
 	auto stop = high_resolution_clock::now();
 	auto duration = duration_cast<microseconds>(stop - start);
 	auto err = cudaGetLastError();
@@ -174,13 +187,50 @@ int useGPU::ImageToRedGpu(unsigned char* imageRGBA, int width, int height) {
 	assert(cudaMemcpy(imageRGBA, ptrImageDataGpu, width * height * 4, cudaMemcpyDeviceToHost) == cudaSuccess);
 
 	cudaFree(ptrImageDataGpu);
-	return duration.count();
-	// Build output filename
-	//std::string fileNameOut = "images/output.jpg";
-	//stbi_write_jpg("images/output.jpg", width, height, 3, imageRGBA, 100);
+
+	// Stop Timer
+	auto end = std::chrono::steady_clock::now();
+	std::chrono::duration<double> elapsed_seconds = end - start;
+	auto Duration_ms = duration_cast<microseconds> (elapsed_seconds);
+	double timecpu = Duration_ms.count();
+
+	// Time of execution
+	//return timecpu;
 }
 
-int useGPU::ImageToGreenGpu(unsigned char* imageRGBA, int width, int height) {
+double useGPU::ImageToGreenGpu(unsigned char* imageRGBA, int width, int height) {
+	// Start Timers
+	auto start = std::chrono::steady_clock::now();
+	unsigned char* ptrImageDataGpu = nullptr;
+	assert(cudaMalloc(&ptrImageDataGpu, width * height * 4) == cudaSuccess);
+	assert(cudaMemcpy(ptrImageDataGpu, imageRGBA, width * height * 4, cudaMemcpyHostToDevice) == cudaSuccess);
+
+	// Process image on gpu
+	dim3 blockSize(20, 20);
+	dim3 gridSize(width / blockSize.x, height / blockSize.y);
+	//ConvertImageToGrayGpu <<<gridSize, blockSize >>> (ptrImageDataGpu);
+
+	ConvertImageToGreenGpu <<< gridSize, blockSize >>> (ptrImageDataGpu);
+
+	auto err = cudaGetLastError();
+
+	// Copy data from the gpu
+	assert(cudaMemcpy(imageRGBA, ptrImageDataGpu, width * height * 4, cudaMemcpyDeviceToHost) == cudaSuccess);
+
+	cudaFree(ptrImageDataGpu);
+	// Stop Timer
+	auto end = std::chrono::steady_clock::now();
+	std::chrono::duration<double> elapsed_seconds = end - start;
+	auto Duration_ms = duration_cast<microseconds> (elapsed_seconds);
+	double timecpu = Duration_ms.count();
+
+	// Time of execution
+	//return timecpu;
+}
+
+double useGPU::ImageToBlueGpu(unsigned char* imageRGBA, int width, int height) {
+	// Start Timers
+	auto start = std::chrono::steady_clock::now();
 	unsigned char* ptrImageDataGpu = nullptr;
 	assert(cudaMalloc(&ptrImageDataGpu, width * height * 4) == cudaSuccess);
 	assert(cudaMemcpy(ptrImageDataGpu, imageRGBA, width * height * 4, cudaMemcpyHostToDevice) == cudaSuccess);
@@ -190,7 +240,7 @@ int useGPU::ImageToGreenGpu(unsigned char* imageRGBA, int width, int height) {
 	dim3 gridSize(width / blockSize.x, height / blockSize.y);
 	//ConvertImageToGrayGpu <<<gridSize, blockSize >>> (ptrImageDataGpu);
 	auto start = high_resolution_clock::now();
-	ConvertImageToGreenGpu << <gridSize, blockSize >> > (ptrImageDataGpu);
+	ConvertImageToBlueGpu <<< gridSize, blockSize >>> (ptrImageDataGpu);
 	auto stop = high_resolution_clock::now();
 	auto duration = duration_cast<microseconds>(stop - start);
 	auto err = cudaGetLastError();
@@ -199,13 +249,19 @@ int useGPU::ImageToGreenGpu(unsigned char* imageRGBA, int width, int height) {
 	assert(cudaMemcpy(imageRGBA, ptrImageDataGpu, width * height * 4, cudaMemcpyDeviceToHost) == cudaSuccess);
 
 	cudaFree(ptrImageDataGpu);
-	return duration.count();
-	// Build output filename
-	//std::string fileNameOut = "images/output.jpg";
-	//stbi_write_jpg("images/output.jpg", width, height, 3, imageRGBA, 100);
+	// Stop Timer
+	auto end = std::chrono::steady_clock::now();
+	std::chrono::duration<double> elapsed_seconds = end - start;
+	auto Duration_ms = duration_cast<microseconds> (elapsed_seconds);
+	double timecpu = Duration_ms.count();
+
+	// Time of execution
+	//return timecpu;
 }
 
-int useGPU::ImageToBlueGpu(unsigned char* imageRGBA, int width, int height) {
+double useGPU::ImageToInvGpu(unsigned char* imageRGBA, int width, int height) {
+	// Start Timers
+	auto start = std::chrono::steady_clock::now();
 	unsigned char* ptrImageDataGpu = nullptr;
 	assert(cudaMalloc(&ptrImageDataGpu, width * height * 4) == cudaSuccess);
 	assert(cudaMemcpy(ptrImageDataGpu, imageRGBA, width * height * 4, cudaMemcpyHostToDevice) == cudaSuccess);
@@ -215,7 +271,7 @@ int useGPU::ImageToBlueGpu(unsigned char* imageRGBA, int width, int height) {
 	dim3 gridSize(width / blockSize.x, height / blockSize.y);
 	//ConvertImageToGrayGpu <<<gridSize, blockSize >>> (ptrImageDataGpu);
 	auto start = high_resolution_clock::now();
-	ConvertImageToBlueGpu << <gridSize, blockSize >> > (ptrImageDataGpu);
+	ConvertImageToInvGpu <<< gridSize, blockSize >>> (ptrImageDataGpu);
 	auto stop = high_resolution_clock::now();
 	auto duration = duration_cast<microseconds>(stop - start);
 	auto err = cudaGetLastError();
@@ -224,33 +280,12 @@ int useGPU::ImageToBlueGpu(unsigned char* imageRGBA, int width, int height) {
 	assert(cudaMemcpy(imageRGBA, ptrImageDataGpu, width * height * 4, cudaMemcpyDeviceToHost) == cudaSuccess);
 
 	cudaFree(ptrImageDataGpu);
-	return duration.count();
-	// Build output filename
-	//std::string fileNameOut = "images/output.jpg";
-	//stbi_write_jpg("images/output.jpg", width, height, 3, imageRGBA, 100);
-}
+	// Stop Timer
+	auto end = std::chrono::steady_clock::now();
+	std::chrono::duration<double> elapsed_seconds = end - start;
+	auto Duration_ms = duration_cast<microseconds> (elapsed_seconds);
+	double timecpu = Duration_ms.count();
 
-int useGPU::ImageToInvGpu(unsigned char* imageRGBA, int width, int height) {
-	unsigned char* ptrImageDataGpu = nullptr;
-	assert(cudaMalloc(&ptrImageDataGpu, width * height * 4) == cudaSuccess);
-	assert(cudaMemcpy(ptrImageDataGpu, imageRGBA, width * height * 4, cudaMemcpyHostToDevice) == cudaSuccess);
-
-	// Process image on gpu
-	dim3 blockSize(20, 20);
-	dim3 gridSize(width / blockSize.x, height / blockSize.y);
-	//ConvertImageToGrayGpu <<<gridSize, blockSize >>> (ptrImageDataGpu);
-	auto start = high_resolution_clock::now();
-	ConvertImageToInvGpu << <gridSize, blockSize >> > (ptrImageDataGpu);
-	auto stop = high_resolution_clock::now();
-	auto duration = duration_cast<microseconds>(stop - start);
-	auto err = cudaGetLastError();
-
-	// Copy data from the gpu
-	assert(cudaMemcpy(imageRGBA, ptrImageDataGpu, width * height * 4, cudaMemcpyDeviceToHost) == cudaSuccess);
-
-	cudaFree(ptrImageDataGpu);
-	return duration.count();
-	// Build output filename
-	//std::string fileNameOut = "images/output.jpg";
-	//stbi_write_jpg("images/output.jpg", width, height, 3, imageRGBA, 100);
+	// Time of execution
+	//return timecpu;
 }

@@ -22,13 +22,8 @@ struct Pixel
 
  double useCPU::ConvertImageToGrayCpu(unsigned char* imageRGBA, int width, int height) {
 	// Start Timers
-	
 	auto start = std::chrono::steady_clock::now();
 
-	/*struct Pixel
-	{
-		unsigned char red, green, blue, alpha;
-	};*/
 	for (int y = 0; y < height; y++) {
 		for (int x = 0; x < width; x++) {
 
@@ -46,6 +41,7 @@ struct Pixel
 
 		}
 	}
+	// Stop Timer
 	auto end = std::chrono::steady_clock::now();
 	std::chrono::duration<double> elapsed_seconds = end - start;
 	auto Duration_ms = duration_cast<microseconds> (elapsed_seconds);
@@ -54,14 +50,12 @@ struct Pixel
 	// Time of execution
 	return timecpu;
 }
+ // Convert Image to Red at CPU
+ double useCPU::ConvertImageToRedCPU(unsigned char* imageRGBA, int width, int height) {
+	 // Start Timers
+	 auto start = std::chrono::steady_clock::now();
 
-inline auto useCPU::ConvertImageToRed(unsigned char* imageRGBA, int width, int height) {
 
-
-	struct Pixel
-	{
-		unsigned char red, green, blue, alpha;
-	};
 	for (int y = 0; y < height; y++) {
 		for (int x = 0; x < width; x++) {
 
@@ -79,17 +73,20 @@ inline auto useCPU::ConvertImageToRed(unsigned char* imageRGBA, int width, int h
 
 		}
 	}
-	return height;
+	auto end = std::chrono::steady_clock::now();
+	std::chrono::duration<double> elapsed_seconds = end - start;
+	auto Duration_ms = duration_cast<microseconds> (elapsed_seconds);
+	double timecpu = Duration_ms.count();
+
+	// Time of execution
+	return timecpu;
 
 }
+ // Convert Image to Green at CPU
+ double useCPU::ConvertImageToGreenCPU(unsigned char* imageRGBA, int width, int height) {
+	 // Start Timers
+	 auto start = std::chrono::steady_clock::now();
 
-inline auto useCPU::ConvertImageToGreen(unsigned char* imageRGBA, int width, int height) {
-
-
-	struct Pixel
-	{
-		unsigned char red, green, blue, alpha;
-	};
 	for (int y = 0; y < height; y++) {
 		for (int x = 0; x < width; x++) {
 
@@ -107,17 +104,19 @@ inline auto useCPU::ConvertImageToGreen(unsigned char* imageRGBA, int width, int
 
 		}
 	}
+	auto end = std::chrono::steady_clock::now();
+	std::chrono::duration<double> elapsed_seconds = end - start;
+	auto Duration_ms = duration_cast<microseconds> (elapsed_seconds);
+	double timecpu = Duration_ms.count();
 
-	return height;
+	// Time of execution
+	return timecpu;
 }
+ // Convert Image to Blue at CPU
+ double useCPU::ConvertImageToBlueCPU(unsigned char* imageRGBA, int width, int height) {
+	 // Start Timers
+	 auto start = std::chrono::steady_clock::now();
 
-inline auto useCPU::ConvertImageToBlue(unsigned char* imageRGBA, int width, int height) {
-
-
-	struct Pixel
-	{
-		unsigned char red, green, blue, alpha;
-	};
 	for (int y = 0; y < height; y++) {
 		for (int x = 0; x < width; x++) {
 
@@ -135,17 +134,19 @@ inline auto useCPU::ConvertImageToBlue(unsigned char* imageRGBA, int width, int 
 
 		}
 	}
+	auto end = std::chrono::steady_clock::now();
+	std::chrono::duration<double> elapsed_seconds = end - start;
+	auto Duration_ms = duration_cast<microseconds> (elapsed_seconds);
+	double timecpu = Duration_ms.count();
 
-	return height;
+	// Time of execution
+	return timecpu;
 }
+ // Convert Image to Inverte at CPU
+ double useCPU::ConvertImageInvCPU(unsigned char* imageRGBA, int width, int height) {
+	 // Start Timers
+	 auto start = std::chrono::steady_clock::now();
 
-inline auto useCPU::ConvertImageInv(unsigned char* imageRGBA, int width, int height) {
-
-
-	struct Pixel
-	{
-		unsigned char red, green, blue, alpha;
-	};
 	for (int y = 0; y < height; y++) {
 		for (int x = 0; x < width; x++) {
 
@@ -163,7 +164,12 @@ inline auto useCPU::ConvertImageInv(unsigned char* imageRGBA, int width, int hei
 
 		}
 	}
-	return height;
+	auto end = std::chrono::steady_clock::now();
+	std::chrono::duration<double> elapsed_seconds = end - start;
+	auto Duration_ms = duration_cast<microseconds> (elapsed_seconds);
+	double timecpu = Duration_ms.count();
+	// Time of execution
+	return timecpu;
 
 }
 

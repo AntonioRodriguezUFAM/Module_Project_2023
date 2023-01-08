@@ -24,8 +24,7 @@ which is why it has to be defined within a .c or .cpp file
 
 #include "Filter_Gpu.h"
 #include"Filter_CPU.h"
-#include "include/stb_image.h"
-#include "include/stb_image_write.h"
+
 #include <string>
 #include <msclr\marshal_cppstd.h>
 
@@ -342,6 +341,7 @@ namespace ModuleProject2023 {
 			this->ImageToInv->TabIndex = 15;
 			this->ImageToInv->Text = L"Image To Inv";
 			this->ImageToInv->UseVisualStyleBackColor = true;
+			this->ImageToInv->Click += gcnew System::EventHandler(this, &GUI_Form::ImageToInv_Click);
 			// 
 			// ImageToRed
 			// 
@@ -354,6 +354,7 @@ namespace ModuleProject2023 {
 			this->ImageToRed->TabIndex = 16;
 			this->ImageToRed->Text = L"Image To Red";
 			this->ImageToRed->UseVisualStyleBackColor = true;
+			this->ImageToRed->Click += gcnew System::EventHandler(this, &GUI_Form::ImageToRed_Click);
 			// 
 			// Filters
 			// 
@@ -378,7 +379,7 @@ namespace ModuleProject2023 {
 			this->ImageToGray->TabIndex = 18;
 			this->ImageToGray->Text = L"Image To Gray";
 			this->ImageToGray->UseVisualStyleBackColor = true;
-			this->ImageToGray->Click += gcnew System::EventHandler(this, &GUI_Form::button1_Click);
+			this->ImageToGray->Click += gcnew System::EventHandler(this, &GUI_Form::ImageToGray_Click);
 			// 
 			// ImageToGreen
 			// 
@@ -391,6 +392,7 @@ namespace ModuleProject2023 {
 			this->ImageToGreen->TabIndex = 19;
 			this->ImageToGreen->Text = L"Image To Green";
 			this->ImageToGreen->UseVisualStyleBackColor = true;
+			this->ImageToGreen->Click += gcnew System::EventHandler(this, &GUI_Form::ImageToGreen_Click);
 			// 
 			// ImageToBlue
 			// 
@@ -403,6 +405,7 @@ namespace ModuleProject2023 {
 			this->ImageToBlue->TabIndex = 20;
 			this->ImageToBlue->Text = L"Image To Blue";
 			this->ImageToBlue->UseVisualStyleBackColor = true;
+			this->ImageToBlue->Click += gcnew System::EventHandler(this, &GUI_Form::ImageToBlue_Click);
 			// 
 			// ImageToHist
 			// 
@@ -534,10 +537,9 @@ private: System::Void Github_LinkClicked(System::Object^ sender, System::Windows
 	// Navigate to a URL.
 	System::Diagnostics::Process::Start("https://github.com/AntonioRodriguezUFAM");
 }
-private: System::Void button1_Click(System::Object^ sender, System::EventArgs^ e) {
+private: System::Void ImageToGray_Click(System::Object^ sender, System::EventArgs^ e) {
 	// Image To Gray
-	// Check GPU enable
-	//useGPU obj;
+	
 	System::String^ file = Input_Image_Box->ImageLocation;
 	std::string converted_xyz = msclr::interop::marshal_as< std::string >(file);
 	int width, height, channels;
@@ -546,11 +548,16 @@ private: System::Void button1_Click(System::Object^ sender, System::EventArgs^ e
 	unsigned char* img = stbi_load(c, &width, &height, &channels, 4);
 	
 	double timeCPU=0,timeGPU = 0;
+	int time = 0;
 
-	// Check Stauts Devices GPU
+	// Check GPU enable
 	if (GPU_ON->Checked) {
 		useGPU GPU_obj;
+		useGPU obj;
+		time = obj.ImageToGrayGpu(img, width, height);
 		//timeGPU = GPU_obj.ImageToGrayGpu(img, width, height);
+		//timeGPU = GPU_obj.ImageToGreenGpu(img,width, height);
+		
 		GPUTimeBox->Text = "Tempo de Processamento - GPU: " + timeGPU.ToString() + " 탎";
 	}
 	// Check Stauts Devices CPU
@@ -559,13 +566,143 @@ private: System::Void button1_Click(System::Object^ sender, System::EventArgs^ e
 		timeCPU=CPU_obj.ConvertImageToGrayCpu(img, width, height);
 		CPUTimeBox->Text = "Tempo de Processamento - CPU:  " + timeCPU.ToString() + " 탎";
 	}
-	//CPUTimeBox->Text = "Tempo de Processamento - CPU:  " + timeCPU.ToString() + " 탎";
-	//GPUTimeBox->Text = "Tempo de Processamento - GPU: " + timeGPU.ToString() + " 탎";
+	
 	// Write Output Image
-	stbi_write_png("images/output.jpg", width, height, 4, img, 4 * width);
-	Output_Image_Box_01->ImageLocation = "images/output.jpg";
+	stbi_write_png("images/output/ImageToGray.jpg", width, height, 4, img, 4 * width);
+	Output_Image_Box_01->ImageLocation = "images/output/ImageToGray.jpg";
 	// Free Image Memory
 	stbi_image_free(img);
+}
+private: System::Void ImageToRed_Click(System::Object^ sender, System::EventArgs^ e) {
+	// Image To Red
+
+	System::String^ file = Input_Image_Box->ImageLocation;
+	std::string converted_xyz = msclr::interop::marshal_as< std::string >(file);
+	int width, height, channels;
+	const char* c = converted_xyz.c_str();
+	//Open Image
+	unsigned char* img = stbi_load(c, &width, &height, &channels, 4);
+
+	double timeCPU = 0, timeGPU = 0;
+
+	// Check GPU enable
+	if (GPU_ON->Checked) {
+		useGPU GPU_obj;
+		//timeGPU = GPU_obj.ImageToGrayGpu(img, width, height);
+		GPUTimeBox->Text = "Tempo de Processamento - GPU: " + timeGPU.ToString() + " 탎";
+	}
+	// Check Stauts Devices CPU
+	if (!GPU_ON->Checked) {
+		useCPU CPU_obj;
+		timeCPU = CPU_obj.ConvertImageToRedCPU(img, width, height);
+		CPUTimeBox->Text = "Tempo de Processamento - CPU:  " + timeCPU.ToString() + " 탎";
+	}
+
+	// Write Output Image
+	stbi_write_png("images/output/ImageToRed.jpg", width, height, 4, img, 4 * width);
+	Output_Image_Box_01->ImageLocation = "images/output/ImageToRed.jpg";
+	// Free Image Memory
+	stbi_image_free(img);
+
+}
+private: System::Void ImageToGreen_Click(System::Object^ sender, System::EventArgs^ e) {
+
+	// Image To Green
+
+	System::String^ file = Input_Image_Box->ImageLocation;
+	std::string converted_xyz = msclr::interop::marshal_as< std::string >(file);
+	int width, height, channels;
+	const char* c = converted_xyz.c_str();
+	//Open Image
+	unsigned char* img = stbi_load(c, &width, &height, &channels, 4);
+
+	double timeCPU = 0, timeGPU = 0;
+
+	// Check GPU enable
+	if (GPU_ON->Checked) {
+		useGPU GPU_obj;
+		//timeGPU = GPU_obj.ImageToGrayGpu(img, width, height);
+		GPUTimeBox->Text = "Tempo de Processamento - GPU: " + timeGPU.ToString() + " 탎";
+	}
+	// Check Stauts Devices CPU
+	if (!GPU_ON->Checked) {
+		useCPU CPU_obj;
+		timeCPU = CPU_obj.ConvertImageToGreenCPU(img, width, height);
+		CPUTimeBox->Text = "Tempo de Processamento - CPU:  " + timeCPU.ToString() + " 탎";
+	}
+
+	// Write Output Image
+	stbi_write_png("images/output/ImageToGreen.jpg", width, height, 4, img, 4 * width);
+	Output_Image_Box_01->ImageLocation = "images/output/ImageToGreen.jpg";
+	// Free Image Memory
+	stbi_image_free(img);
+
+}
+private: System::Void ImageToBlue_Click(System::Object^ sender, System::EventArgs^ e) {
+
+	// Image To Blue
+
+	System::String^ file = Input_Image_Box->ImageLocation;
+	std::string converted_xyz = msclr::interop::marshal_as< std::string >(file);
+	int width, height, channels;
+	const char* c = converted_xyz.c_str();
+	//Open Image
+	unsigned char* img = stbi_load(c, &width, &height, &channels, 4);
+
+	double timeCPU = 0, timeGPU = 0;
+
+	// Check GPU enable
+	if (GPU_ON->Checked) {
+		useGPU GPU_obj;
+		//timeGPU = GPU_obj.ImageToGrayGpu(img, width, height);
+		GPUTimeBox->Text = "Tempo de Processamento - GPU: " + timeGPU.ToString() + " 탎";
+	}
+	// Check Stauts Devices CPU
+	if (!GPU_ON->Checked) {
+		useCPU CPU_obj;
+		timeCPU = CPU_obj.ConvertImageToBlueCPU(img, width, height);
+		CPUTimeBox->Text = "Tempo de Processamento - CPU:  " + timeCPU.ToString() + " 탎";
+	}
+
+	// Write Output Image
+	stbi_write_png("images/output/ImageToBlue.jpg", width, height, 4, img, 4 * width);
+	Output_Image_Box_01->ImageLocation = "images/output/ImageToBlue.jpg";
+	// Free Image Memory
+	stbi_image_free(img);
+
+}
+private: System::Void ImageToInv_Click(System::Object^ sender, System::EventArgs^ e) {
+
+	// Image To Inverte
+
+	System::String^ file = Input_Image_Box->ImageLocation;
+	std::string converted_xyz = msclr::interop::marshal_as< std::string >(file);
+	int width, height, channels;
+	const char* c = converted_xyz.c_str();
+	//Open Image
+	unsigned char* img = stbi_load(c, &width, &height, &channels, 4);
+
+	double timeCPU = 0, timeGPU = 0;
+
+	// Check GPU enable
+	if (GPU_ON->Checked) {
+		useGPU GPU_obj;
+		//timeGPU = GPU_obj.ImageToInvGpu(img, width, height);
+		GPUTimeBox->Text = "Tempo de Processamento - GPU: " + timeGPU.ToString() + " 탎";
+	}
+	// Check Stauts Devices CPU
+	if (!GPU_ON->Checked) {
+		useCPU CPU_obj;
+		timeCPU = CPU_obj.ConvertImageToRedCPU(img, width, height);
+		CPUTimeBox->Text = "Tempo de Processamento - CPU:  " + timeCPU.ToString() + " 탎";
+	}
+
+	// Write Output Image
+	stbi_write_png("images/output/ImageToInv.jpg", width, height, 4, img, 4 * width);
+	Output_Image_Box_01->ImageLocation = "images/output/ImageToInv.jpg";
+	// Free Image Memory
+	stbi_image_free(img);
+
 }
 };
 }
