@@ -24,6 +24,7 @@ which is why it has to be defined within a .c or .cpp file
 
 #include "Filter_Gpu.h"
 #include"Filter_CPU.h"
+#include "Image.h"
 
 #include <string>
 #include <msclr\marshal_cppstd.h>
@@ -554,7 +555,7 @@ private: System::Void ImageToGray_Click(System::Object^ sender, System::EventArg
 	if (GPU_ON->Checked) {
 		useGPU GPU_obj;
 		useGPU obj;
-		time = obj.ImageToGrayGpu(img, width, height);
+		//time = obj.ImageToGrayGpu(img, width, height);
 		//timeGPU = GPU_obj.ImageToGrayGpu(img, width, height);
 		//timeGPU = GPU_obj.ImageToGreenGpu(img,width, height);
 		

@@ -59,7 +59,6 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
     <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 11.4.props" />
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\ImageContentTask.props" />
   </ImportGroup>
   <ImportGroup Label="Shared">
   </ImportGroup>
@@ -131,6 +130,7 @@
   <ItemGroup>
     <ClCompile Include="Filter_CPU.cpp" />
     <ClCompile Include="GUI_Form.cpp" />
+    <ClCompile Include="Image.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Filter_CPU.h" />
@@ -138,8 +138,10 @@
     <ClInclude Include="GUI_Form.h">
       <FileType>CppForm</FileType>
     </ClInclude>
+    <ClInclude Include="Image.h" />
     <ClInclude Include="include\stb_image.h" />
     <ClInclude Include="include\stb_image_write.h" />
+    <ClInclude Include="schrift.h" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="GUI_Form.resx">
@@ -150,9 +152,11 @@
     <None Include="Filter_Gpu.cu" />
     <None Include="README.md" />
   </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="Image.cu" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 11.4.targets" />
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\ImageContentTask.targets" />
   </ImportGroup>
 </Project>

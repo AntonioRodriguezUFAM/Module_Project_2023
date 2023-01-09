@@ -21,6 +21,9 @@
     <ClCompile Include="Filter_CPU.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Image.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GUI_Form.h">
@@ -38,9 +41,18 @@
     <ClInclude Include="include\stb_image_write.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Image.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="schrift.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Filter_Gpu.cu" />
     <None Include="README.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="Image.cu" />
   </ItemGroup>
 </Project>
