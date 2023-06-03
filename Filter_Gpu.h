@@ -1,13 +1,7 @@
-#pragma once
+
 #ifndef GPUFUNC_H
 #define GPUFUNC_H
 
-//Load Images
-#define STB_IMAGE_IMPLEMENTATION
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "include/stb_image.h"
-// Write Images
-#include "include/stb_image_write.h"
 
 
 class useGPU

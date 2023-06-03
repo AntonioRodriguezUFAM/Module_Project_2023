@@ -1,4 +1,35 @@
 #pragma once
+#include "Filter_Gpu.h"
+#include"Filter_CPU.h"
+
+#include<iostream>
+#include <msclr\marshal_cppstd.h>
+#include <fstream>
+#include <stdio.h>
+#include <stdlib.h>
+#include <ctime>
+#include <math.h>
+#include <string>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sstream>
+#include <iomanip>
+#include <cuda.h>
+#include <cuda_runtime.h>
+#include <cuda_runtime_api.h>
+#include "device_launch_parameters.h"
+
+
+
+//#include "Image.h"
+
+#include <chrono>
+
+using namespace std::chrono;
+
+
+
+//#pragma once
 /*
  STB Error unresolved external symbol _stbi_load #3
 Ref :https://github.com/nothings/stb/issues/3
@@ -22,22 +53,9 @@ which is why it has to be defined within a .c or .cpp file
 // Write Images
 #include "include/stb_image_write.h"
 
-#include "Filter_Gpu.h"
-#include"Filter_CPU.h"
-#include "Image.h"
-
-#include <string>
-#include <msclr\marshal_cppstd.h>
-
-#include <chrono>
-
-#include <iostream>
-
-using namespace std::chrono;
-
 
 namespace ModuleProject2023 {
-
+	using namespace std;
 	using namespace System;
 	using namespace System::ComponentModel;
 	using namespace System::Collections;
@@ -46,6 +64,8 @@ namespace ModuleProject2023 {
 	using namespace System::Drawing;
 	using namespace System::Diagnostics;
 	using namespace System::IO;
+	using namespace std::chrono;
+
 
 	/// <summary>
 	/// Summary for GUI_Form
@@ -120,7 +140,14 @@ namespace ModuleProject2023 {
 
 
 
-	private: System::ComponentModel::IContainer^ components;
+	private: 
+
+		/// <summary>
+		/// Antonio Error linkers
+		/// Variável de designer necessária.
+	/// </summary>
+		System::ComponentModel::IContainer^ components;
+	
 
 
 
@@ -129,6 +156,7 @@ namespace ModuleProject2023 {
 		/// <summary>
 		/// Required designer variable.
 		/// </summary>
+		//System::ComponentModel::Container^ components;
 
 
 #pragma region Windows Form Designer generated code
@@ -225,6 +253,7 @@ namespace ModuleProject2023 {
 			this->Output_Image_Box_01->SizeMode = System::Windows::Forms::PictureBoxSizeMode::CenterImage;
 			this->Output_Image_Box_01->TabIndex = 4;
 			this->Output_Image_Box_01->TabStop = false;
+			this->Output_Image_Box_01->Click += gcnew System::EventHandler(this, &GUI_Form::Output_Image_Box_01_Click);
 			// 
 			// Output_Image_Box_02
 			// 
@@ -235,6 +264,7 @@ namespace ModuleProject2023 {
 			this->Output_Image_Box_02->SizeMode = System::Windows::Forms::PictureBoxSizeMode::CenterImage;
 			this->Output_Image_Box_02->TabIndex = 5;
 			this->Output_Image_Box_02->TabStop = false;
+			this->Output_Image_Box_02->Click += gcnew System::EventHandler(this, &GUI_Form::Output_Image_Box_02_Click);
 			// 
 			// Github
 			// 
@@ -274,6 +304,7 @@ namespace ModuleProject2023 {
 			this->CPUTimeBox->Name = L"CPUTimeBox";
 			this->CPUTimeBox->Size = System::Drawing::Size(381, 29);
 			this->CPUTimeBox->TabIndex = 9;
+			this->CPUTimeBox->TextChanged += gcnew System::EventHandler(this, &GUI_Form::CPUTimeBox_TextChanged);
 			// 
 			// GPUTimeBox
 			// 
@@ -283,6 +314,7 @@ namespace ModuleProject2023 {
 			this->GPUTimeBox->Name = L"GPUTimeBox";
 			this->GPUTimeBox->Size = System::Drawing::Size(381, 29);
 			this->GPUTimeBox->TabIndex = 10;
+			this->GPUTimeBox->TextChanged += gcnew System::EventHandler(this, &GUI_Form::GPUTimeBox_TextChanged);
 			// 
 			// CPU_Timer
 			// 
@@ -291,9 +323,10 @@ namespace ModuleProject2023 {
 				static_cast<System::Byte>(0)));
 			this->CPU_Timer->Location = System::Drawing::Point(1046, 59);
 			this->CPU_Timer->Name = L"CPU_Timer";
-			this->CPU_Timer->Size = System::Drawing::Size(90, 23);
+			this->CPU_Timer->Size = System::Drawing::Size(87, 22);
 			this->CPU_Timer->TabIndex = 11;
 			this->CPU_Timer->Text = L"CPU Timer";
+			this->CPU_Timer->Click += gcnew System::EventHandler(this, &GUI_Form::CPU_Timer_Click);
 			// 
 			// GPU_Timer
 			// 
@@ -302,9 +335,10 @@ namespace ModuleProject2023 {
 				static_cast<System::Byte>(0)));
 			this->GPU_Timer->Location = System::Drawing::Point(1046, 98);
 			this->GPU_Timer->Name = L"GPU_Timer";
-			this->GPU_Timer->Size = System::Drawing::Size(92, 23);
+			this->GPU_Timer->Size = System::Drawing::Size(88, 22);
 			this->GPU_Timer->TabIndex = 12;
 			this->GPU_Timer->Text = L"GPU Timer";
+			this->GPU_Timer->Click += gcnew System::EventHandler(this, &GUI_Form::GPU_Timer_Click);
 			// 
 			// Timer
 			// 
@@ -317,6 +351,7 @@ namespace ModuleProject2023 {
 			this->Timer->TabIndex = 13;
 			this->Timer->Text = L"Timer";
 			this->Timer->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
+			this->Timer->Click += gcnew System::EventHandler(this, &GUI_Form::Timer_Click);
 			// 
 			// GPU_ON
 			// 
@@ -325,11 +360,12 @@ namespace ModuleProject2023 {
 				static_cast<System::Byte>(0)));
 			this->GPU_ON->Location = System::Drawing::Point(1442, 23);
 			this->GPU_ON->Name = L"GPU_ON";
-			this->GPU_ON->Size = System::Drawing::Size(95, 27);
+			this->GPU_ON->Size = System::Drawing::Size(92, 26);
 			this->GPU_ON->TabIndex = 14;
 			this->GPU_ON->Text = L"GPU ON";
 			this->GPU_ON->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
 			this->GPU_ON->UseVisualStyleBackColor = true;
+			this->GPU_ON->CheckedChanged += gcnew System::EventHandler(this, &GUI_Form::GPU_ON_CheckedChanged);
 			// 
 			// ImageToInv
 			// 
@@ -368,6 +404,7 @@ namespace ModuleProject2023 {
 			this->Filters->TabIndex = 17;
 			this->Filters->Text = L"Filters";
 			this->Filters->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
+			this->Filters->Click += gcnew System::EventHandler(this, &GUI_Form::Filters_Click);
 			// 
 			// ImageToGray
 			// 
@@ -419,6 +456,7 @@ namespace ModuleProject2023 {
 			this->ImageToHist->TabIndex = 21;
 			this->ImageToHist->Text = L"Image To Hist";
 			this->ImageToHist->UseVisualStyleBackColor = true;
+			this->ImageToHist->Click += gcnew System::EventHandler(this, &GUI_Form::ImageToHist_Click);
 			// 
 			// Pipeline_State_01_Label
 			// 
@@ -427,7 +465,7 @@ namespace ModuleProject2023 {
 				static_cast<System::Byte>(0)));
 			this->Pipeline_State_01_Label->Location = System::Drawing::Point(530, 621);
 			this->Pipeline_State_01_Label->Name = L"Pipeline_State_01_Label";
-			this->Pipeline_State_01_Label->Size = System::Drawing::Size(137, 23);
+			this->Pipeline_State_01_Label->Size = System::Drawing::Size(131, 22);
 			this->Pipeline_State_01_Label->TabIndex = 23;
 			this->Pipeline_State_01_Label->Text = L"Pipeline State 01";
 			// 
@@ -447,7 +485,7 @@ namespace ModuleProject2023 {
 				static_cast<System::Byte>(0)));
 			this->Pipeline_State_02_Label->Location = System::Drawing::Point(1046, 618);
 			this->Pipeline_State_02_Label->Name = L"Pipeline_State_02_Label";
-			this->Pipeline_State_02_Label->Size = System::Drawing::Size(137, 23);
+			this->Pipeline_State_02_Label->Size = System::Drawing::Size(131, 22);
 			this->Pipeline_State_02_Label->TabIndex = 25;
 			this->Pipeline_State_02_Label->Text = L"Pipeline State 02";
 			// 
@@ -540,6 +578,7 @@ private: System::Void Github_LinkClicked(System::Object^ sender, System::Windows
 }
 private: System::Void ImageToGray_Click(System::Object^ sender, System::EventArgs^ e) {
 	// Image To Gray
+	useGPU GPU_obj;
 	
 	System::String^ file = Input_Image_Box->ImageLocation;
 	std::string converted_xyz = msclr::interop::marshal_as< std::string >(file);
@@ -553,9 +592,8 @@ private: System::Void ImageToGray_Click(System::Object^ sender, System::EventArg
 
 	// Check GPU enable
 	if (GPU_ON->Checked) {
-		useGPU GPU_obj;
-		useGPU obj;
-		//time = obj.ImageToGrayGpu(img, width, height);
+		//useGPU GPU_obj;
+		time = GPU_obj.ImageToGrayGpu(img, width, height);
 		//timeGPU = GPU_obj.ImageToGrayGpu(img, width, height);
 		//timeGPU = GPU_obj.ImageToGreenGpu(img,width, height);
 		
@@ -704,6 +742,26 @@ private: System::Void ImageToInv_Click(System::Object^ sender, System::EventArgs
 	// Free Image Memory
 	stbi_image_free(img);
 
+}
+private: System::Void ImageToHist_Click(System::Object^ sender, System::EventArgs^ e) {
+}
+private: System::Void Filters_Click(System::Object^ sender, System::EventArgs^ e) {
+}
+private: System::Void GPU_ON_CheckedChanged(System::Object^ sender, System::EventArgs^ e) {
+}
+private: System::Void Timer_Click(System::Object^ sender, System::EventArgs^ e) {
+}
+private: System::Void GPU_Timer_Click(System::Object^ sender, System::EventArgs^ e) {
+}
+private: System::Void CPU_Timer_Click(System::Object^ sender, System::EventArgs^ e) {
+}
+private: System::Void GPUTimeBox_TextChanged(System::Object^ sender, System::EventArgs^ e) {
+}
+private: System::Void CPUTimeBox_TextChanged(System::Object^ sender, System::EventArgs^ e) {
+}
+private: System::Void Output_Image_Box_02_Click(System::Object^ sender, System::EventArgs^ e) {
+}
+private: System::Void Output_Image_Box_01_Click(System::Object^ sender, System::EventArgs^ e) {
 }
 };
 }

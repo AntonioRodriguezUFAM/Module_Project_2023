@@ -5,8 +5,8 @@
 #include "device_launch_parameters.h"
 #include "Image.h"
 #include <stdio.h>
-#include "../include/stb_image.h"
-#include "../include/stb_image_write.h"
+#include "include/stb_image.h"
+#include "include/stb_image_write.h"
 #include <iostream>
 #include <string>
 #include <cassert>

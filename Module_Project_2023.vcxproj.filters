@@ -21,9 +21,6 @@
     <ClCompile Include="Filter_CPU.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Image.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GUI_Form.h">
@@ -49,10 +46,9 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Filter_Gpu.cu" />
     <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
-    <CudaCompile Include="Image.cu" />
+    <CudaCompile Include="Filter_Gpu.cu" />
   </ItemGroup>
 </Project>

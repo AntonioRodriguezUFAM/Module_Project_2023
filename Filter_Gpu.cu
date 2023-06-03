@@ -1,8 +1,8 @@
-
-// GPU Filters
-#include"Filter_CPU.h"
-#include "Filter_Gpu.h"
-
+#include <iostream>
+#include <cuda.h>
+#include <cuda_runtime.h>
+#include <cuda_runtime_api.h>
+#include "device_launch_parameters.h"
 #include <stdio.h>
 #include "include/stb_image.h"
 #include "include/stb_image_write.h"
@@ -10,20 +10,15 @@
 #include <string>
 #include <cassert>
 #include <chrono>
-#include <ctime>
 
+// GPU Filters
+#include"Filter_CPU.h"
+#include "Filter_Gpu.h"
 
-#include <msclr\marshal_cppstd.h>
-
-
-#include <cuda.h>
-#include <cuda_runtime.h>
-#include <cuda_runtime_api.h>
-#include "device_launch_parameters.h"
 
 
 using namespace std::chrono;
-using namespace std;
+
 
 // Create Data Structure Pixel
 struct Pixel
@@ -111,7 +106,7 @@ __global__ void ConvertImageToInvGpu(unsigned char* imageRGBA)
 	ptrPixel->a = 255;
 }
 
-
+using namespace std;
 
 void useGPU::adding(int* c, const int* a, const int* b, unsigned int size) {
 	int* dev_a = 0;
@@ -137,15 +132,33 @@ void useGPU::adding(int* c, const int* a, const int* b, unsigned int size) {
 
 
 int useGPU::ImageToGrayGpu(unsigned char* imageRGBA, int width, int height) {
+	#define N 1000         // a big number up to INT_MAX, 2,147,483,647
+	int T = 1, B = 1;            				// threads per block and blocks per grid
+	float cpu_result, *gpu_result, ans[T * B];	// result from gpu, to make sure computation is being done
+
 	// Start Timers
+	cudaEvent_t startgpu, endgpu;    				// using cuda events to measure time
+	float time;       						// which is applicable for asynchronous code also
+	cudaEventCreate(&startgpu);    		 	// instrument code to measure start time
+	cudaEventCreate(&endgpu);
+
 	unsigned char* ptrImageDataGpu = nullptr;
 	assert(cudaMalloc(&ptrImageDataGpu, width * height * 4) == cudaSuccess);
 	assert(cudaMemcpy(ptrImageDataGpu, imageRGBA, width * height * 4, cudaMemcpyHostToDevice) == cudaSuccess);
 
+
+
 	// Process image on gpu
 	dim3 blockSize(20, 20);
 	dim3 gridSize(width / blockSize.x, height / blockSize.y);
+	// CUDA  Start reconding the Time
+	cudaEventRecord(startgpu, 0);
+
 	//ConvertImageToGrayGpu <<<gridSize, blockSize >>> (ptrImageDataGpu);
+	// 
+	// STOP  TIMER
+	cudaEventRecord(endgpu, 0);    	 		// instrument code to measure end time
+	
 	auto start = high_resolution_clock::now();
 	ConvertImageToGrayGpu << <gridSize, blockSize >> > (ptrImageDataGpu);
 	auto stop = high_resolution_clock::now();
@@ -156,6 +169,18 @@ int useGPU::ImageToGrayGpu(unsigned char* imageRGBA, int width, int height) {
 	assert(cudaMemcpy(imageRGBA, ptrImageDataGpu, width * height * 4, cudaMemcpyDeviceToHost) == cudaSuccess);
 
 	cudaFree(ptrImageDataGpu);
+
+	
+	cudaEventSynchronize(endgpu);	// wait for all device work to complete
+	cudaEventElapsedTime(&time, startgpu, endgpu);
+
+	printf("GPU, Answer thread 0, %e\n", ans[0]);
+	printf("GPU Number of floating pt operations done %e\n", (double)N * N * T * B);
+	printf("GPU Time using CUDA events: %f ms\n", time);  		// time is in ms
+
+	cudaEventDestroy(startgpu); //destroy start event
+	cudaEventDestroy(endgpu);	//destroy stop event
+
 	return duration.count();
 
 	// Time of execution
@@ -176,7 +201,7 @@ double useGPU::ImageToRedGpu(unsigned char* imageRGBA, int width, int height) {
 	dim3 blockSize(20, 20);
 	dim3 gridSize(width / blockSize.x, height / blockSize.y);
 	//ConvertImageToGrayGpu <<<gridSize, blockSize >>> (ptrImageDataGpu);
-	auto start = high_resolution_clock::now();
+	auto start1 = high_resolution_clock::now();
 
 	ConvertImageToRedGpu <<< gridSize, blockSize >>> (ptrImageDataGpu);
 	auto stop = high_resolution_clock::now();
@@ -195,7 +220,7 @@ double useGPU::ImageToRedGpu(unsigned char* imageRGBA, int width, int height) {
 	double timecpu = Duration_ms.count();
 
 	// Time of execution
-	//return timecpu;
+	return timecpu;
 }
 
 double useGPU::ImageToGreenGpu(unsigned char* imageRGBA, int width, int height) {
@@ -225,7 +250,7 @@ double useGPU::ImageToGreenGpu(unsigned char* imageRGBA, int width, int height) 
 	double timecpu = Duration_ms.count();
 
 	// Time of execution
-	//return timecpu;
+	return timecpu;
 }
 
 double useGPU::ImageToBlueGpu(unsigned char* imageRGBA, int width, int height) {
@@ -239,7 +264,7 @@ double useGPU::ImageToBlueGpu(unsigned char* imageRGBA, int width, int height) {
 	dim3 blockSize(20, 20);
 	dim3 gridSize(width / blockSize.x, height / blockSize.y);
 	//ConvertImageToGrayGpu <<<gridSize, blockSize >>> (ptrImageDataGpu);
-	auto start = high_resolution_clock::now();
+	auto start1 = high_resolution_clock::now();
 	ConvertImageToBlueGpu <<< gridSize, blockSize >>> (ptrImageDataGpu);
 	auto stop = high_resolution_clock::now();
 	auto duration = duration_cast<microseconds>(stop - start);
@@ -256,7 +281,7 @@ double useGPU::ImageToBlueGpu(unsigned char* imageRGBA, int width, int height) {
 	double timecpu = Duration_ms.count();
 
 	// Time of execution
-	//return timecpu;
+	return timecpu;
 }
 
 double useGPU::ImageToInvGpu(unsigned char* imageRGBA, int width, int height) {
@@ -270,7 +295,7 @@ double useGPU::ImageToInvGpu(unsigned char* imageRGBA, int width, int height) {
 	dim3 blockSize(20, 20);
 	dim3 gridSize(width / blockSize.x, height / blockSize.y);
 	//ConvertImageToGrayGpu <<<gridSize, blockSize >>> (ptrImageDataGpu);
-	auto start = high_resolution_clock::now();
+	auto start1 = high_resolution_clock::now();
 	ConvertImageToInvGpu <<< gridSize, blockSize >>> (ptrImageDataGpu);
 	auto stop = high_resolution_clock::now();
 	auto duration = duration_cast<microseconds>(stop - start);
@@ -287,5 +312,5 @@ double useGPU::ImageToInvGpu(unsigned char* imageRGBA, int width, int height) {
 	double timecpu = Duration_ms.count();
 
 	// Time of execution
-	//return timecpu;
+	return timecpu;
 }

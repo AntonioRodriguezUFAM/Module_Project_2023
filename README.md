@@ -24,3 +24,15 @@ int main(int argc, char** argv) {
 
 	return 0;
 }
+
+# How can I compile CUDA code then link it to a C++/CLR project
+https://forums.developer.nvidia.com/t/how-can-i-compile-cuda-code-then-link-it-to-a-c-clr-project/46523
+rEF:https://www.youtube.com/watch?v=6Ed-RRQoPWU
+
+## unresolved externals? 
+
+
+##  Compiling CUDA code along with other C++ code
+
+https://vivekvidyasagaran.weebly.com/moose/compiling-cuda-code-along-with-other-c-code
+
